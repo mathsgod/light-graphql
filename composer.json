@@ -1,0 +1,24 @@
+{
+    "name": "mathsgod/light-graphql",
+    "description": "Simple graphql server",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Raymond Chong",
+            "email": "mathsgod@yahoo.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "":"test/",
+            "Light\\GraphQL\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.0",
+        "league/container": "^4.2",
+        "thecodingmachine/graphqlite": "^6.0||^7.0",
+        "symfony/cache": "^6.4",
+        "mathsgod/graphqlite-mixed-type": "*"
+    }
+}
