@@ -20,14 +20,12 @@ class Server
         $this->container = new \League\Container\Container();
         $this->container->delegate(new \League\Container\ReflectionContainer());
 
-        $this->cache = new Psr16Cache(new FilesystemAdapter());
+        $this->cache = new Psr16Cache(new FilesystemAdapter(defaultLifetime: 15));
 
         $this->factory = new SchemaFactory($this->cache, $this->container);
-        $this->factory->addControllerNamespace("Controller");
-        $this->factory->addTypeNamespace("Model");
-        $this->factory->addTypeNamespace("Input");
 
         $this->factory->addRootTypeMapperFactory(new MixedTypeMapperFactory);
+        $this->factory->prodMode();
     }
 
     public function getSchemaFactory()
