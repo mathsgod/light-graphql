@@ -17,14 +17,7 @@ The entry point for the application is `index.php`. It initializes the GraphQL s
 - **Schema Factory**: The schema is dynamically created using the `SchemaFactory` provided by the `Light\GraphQL\Server`. It allows adding namespaces for controllers.
 - **Controllers**: The `Controllers` namespace is used to define resolvers for GraphQL queries.
 
-### Example Query
-
-The server is set up to handle GraphQL queries. For example, you can execute the following query:
-```graphql
-{
-  test
-}
-```
+- **GraphQL Execution**: The `GraphQL::executeQuery` method is used to execute the GraphQL query against the schema.
 
 ### Code Overview
 
