@@ -15,12 +15,13 @@ class Server
     protected $cache;
     protected $factory;
 
-    public function __construct()
+    public function __construct($defaultLiftetime = 15)
+    {
     {
         $this->container = new \League\Container\Container();
         $this->container->delegate(new \League\Container\ReflectionContainer());
 
-        $this->cache = new Psr16Cache(new FilesystemAdapter(defaultLifetime: 15));
+        $this->cache = new Psr16Cache(new FilesystemAdapter(defaultLifetime: $defaultLiftetime));
 
         $this->factory = new SchemaFactory($this->cache, $this->container);
 
