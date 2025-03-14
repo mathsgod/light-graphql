@@ -8,10 +8,6 @@ Light GraphQL is a lightweight GraphQL server implementation designed for simpli
 composer require light/graphql
 ```
 
-## Usage
-
-The entry point for the application is `index.php`. It initializes the GraphQL server and executes queries.
-
 ### Key Components
 
 - **Schema Factory**: The schema is dynamically created using the `SchemaFactory` provided by the `Light\GraphQL\Server`. It allows adding namespaces for controllers.
@@ -29,9 +25,7 @@ use GraphQL\GraphQL;
 require_once __DIR__ . '/vendor/autoload.php';
 
 $server = new \Light\GraphQL\Server();
-$factory = $server->getSchemaFactory();
-$factory->addNamespace("Controllers");
-$schema = $factory->createSchema();
+$server->getSchemaFactory()->addNamespace("Controllers");
 
-print_R(GraphQL::executeQuery($schema, $query)->toArray());
+print_R($sever->executeQuery($query)->toArray());
 ```

@@ -17,7 +17,6 @@ class Server
 
     public function __construct($defaultLiftetime = 15)
     {
-    {
         $this->container = new \League\Container\Container();
         $this->container->delegate(new \League\Container\ReflectionContainer());
 
@@ -42,5 +41,10 @@ class Server
     public function getCache()
     {
         return $this->cache;
+    }
+
+    public function executeQuery($query, $variables = [], $operationName = null)
+    {
+        return \GraphQL\GraphQL::executeQuery($this->factory->createSchema(), $query, null, null, $variables, $operationName);
     }
 }

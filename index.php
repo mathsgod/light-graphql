@@ -7,10 +7,6 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 $server = new \Light\GraphQL\Server();
 
-$factory = $server->getSchemaFactory();
+$server->getSchemaFactory()->addNamespace("Controllers");
 
-$factory->addNamespace("Controllers");
-
-$schema = $factory->createSchema();
-
-print_R(GraphQL::executeQuery($schema, "{test}")->toArray());
+print_R($server->executeQuery("{test}")->toArray());
