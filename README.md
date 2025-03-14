@@ -2,6 +2,13 @@
 
 Light GraphQL is a lightweight GraphQL server implementation designed for simplicity and ease of use. This project demonstrates how to set up a basic GraphQL server using PHP.
 
+This library is built using several dependencies, including `graphqlite`, which provides annotations and tools for creating GraphQL APIs in PHP. Other key dependencies include:
+
+- **league/container**: A lightweight dependency injection container.
+- **symfony/cache**: A caching library for optimizing performance.
+
+These libraries work together to provide a robust and flexible foundation for building GraphQL servers.
+
 ## Installation
 
 ```
