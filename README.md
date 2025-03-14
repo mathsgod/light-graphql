@@ -13,7 +13,7 @@ composer require light/graphql
 - **Schema Factory**: The schema is dynamically created using the `SchemaFactory` provided by the `Light\GraphQL\Server`. It allows adding namespaces for controllers.
 - **Controllers**: The `Controllers` namespace is used to define resolvers for GraphQL queries.
 
-- **GraphQL Execution**: The `GraphQL::executeQuery` method is used to execute the GraphQL query against the schema.
+- **GraphQL Execution**: The `Server::executeQuery` method is used to execute the GraphQL query against the schema. In the provided example, the query `$query` is executed, and the result is converted to an array using `toArray()`.
 
 ### Code Overview
 
