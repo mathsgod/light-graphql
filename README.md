@@ -22,7 +22,7 @@ composer require light/graphql
 
 - **GraphQL Execution**: The `Server::executeQuery` method is used to execute the GraphQL query against the schema. In the provided example, the query `$query` is executed, and the result is converted to an array using `toArray()`.
 
-### Code Overview
+### Usage Example
 
 
 ```php
@@ -36,3 +36,16 @@ $server->getSchemaFactory()->addNamespace("Controllers");
 
 print_R($sever->executeQuery($query)->toArray());
 ```
+
+
+#### ServerRequestInterface handling
+
+```php
+
+use Controllers\RootController;
+use GraphQL\GraphQL;
+
+$server = new \Light\GraphQL\Server();
+$server->getSchemaFactory()->addNamespace("Controllers");
+
+$response=$server->handle($request);
