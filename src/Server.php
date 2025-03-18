@@ -3,12 +3,20 @@
 
 namespace Light\GraphQL;
 
+use Exception;
 use GQL\Type\MixedTypeMapperFactory;
+use GraphQL\Error\DebugFlag;
+use GraphQL\Upload\UploadMiddleware;
+use Laminas\Diactoros\Response\JsonResponse;
+use Laminas\Diactoros\Response\TextResponse;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 use TheCodingMachine\GraphQLite\SchemaFactory;
 
-class Server
+class Server implements RequestHandlerInterface
 {
 
     protected $container;
@@ -46,5 +54,25 @@ class Server
     public function executeQuery($query, $variables = [], $operationName = null)
     {
         return \GraphQL\GraphQL::executeQuery($this->factory->createSchema(), $query, null, null, $variables, $operationName);
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $request = $request->withParsedBody(
+            json_decode($request->getBody()->getContents(), true)
+        );
+        $uploadMiddleware = new UploadMiddleware();
+        $request = $uploadMiddleware->processRequest($request);
+
+        $body = $request->getParsedBody();
+        $query = $body["query"];
+        $variables = $body["variables"] ?? [];
+
+        try {
+            $result = $this->executeQuery($query, $variables)->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
+            return new JsonResponse($result);
+        } catch (Exception $e) {
+            return new TextResponse($e->getMessage());
+        }
     }
 }

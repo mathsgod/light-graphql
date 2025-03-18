@@ -19,6 +19,8 @@
         "league/container": "^4.2",
         "thecodingmachine/graphqlite": "^8.0",
         "symfony/cache": "^6.4",
-        "mathsgod/graphqlite-mixed-type": "^2.3"
+        "mathsgod/graphqlite-mixed-type": "^2.3",
+        "ecodev/graphql-upload": "^7.0",
+        "laminas/laminas-diactoros": "^3.5"
     }
 }
