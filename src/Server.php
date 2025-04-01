@@ -24,7 +24,7 @@ class Server implements RequestHandlerInterface
     protected $factory;
     protected $debug;
 
-    public function __construct($defaultLiftetime = 15, $debug = false, ?ContainerInterface $container)
+    public function __construct($defaultLiftetime = 15, $debug = false, ?ContainerInterface $container = null)
     {
         $this->debug = $debug;
 
