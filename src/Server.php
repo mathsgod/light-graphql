@@ -8,7 +8,7 @@ use GQL\Type\MixedTypeMapperFactory;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Upload\UploadMiddleware;
 use Laminas\Diactoros\Response\JsonResponse;
-use Laminas\Diactoros\Response\TextResponse;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -22,13 +22,20 @@ class Server implements RequestHandlerInterface
     protected $container;
     protected $cache;
     protected $factory;
+    protected $debug;
 
-    public function __construct($defaultLiftetime = 15)
+    public function __construct($defaultLiftetime = 15, $debug = false, ?ContainerInterface $container)
     {
-        $this->container = new \League\Container\Container();
-        $this->container->delegate(new \League\Container\ReflectionContainer());
+        $this->debug = $debug;
 
-        $this->cache = new Psr16Cache(new FilesystemAdapter(defaultLifetime: $defaultLiftetime));
+        if ($container) {
+            $this->container = $container;
+        } else {
+            $this->container = new \League\Container\Container();
+            $this->container->delegate(new \League\Container\ReflectionContainer());
+        }
+
+        $this->cache = new Psr16Cache(new FilesystemAdapter("light", $defaultLiftetime));
 
         $this->factory = new SchemaFactory($this->cache, $this->container);
 
@@ -69,10 +76,28 @@ class Server implements RequestHandlerInterface
         $variables = $body["variables"] ?? [];
 
         try {
-            $result = $this->executeQuery($query, $variables)->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
+            $result = $this->executeQuery($query, $variables);
+            if ($this->debug) {
+                $result = $result->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
+            } else {
+                $result = $result->toArray();
+            }
+
             return new JsonResponse($result);
         } catch (Exception $e) {
-            return new TextResponse($e->getMessage());
+            if ($this->debug) {
+                $errorResponse = [
+                    'error' => true,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTrace(),
+                ];
+            } else {
+                $errorResponse = [
+                    'error' => true,
+                    'message' => 'An internal server error occurred.',
+                ];
+            }
+            return new JsonResponse($errorResponse, 500);
         }
     }
 }
