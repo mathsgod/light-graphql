@@ -12,7 +12,7 @@ These libraries work together to provide a robust and flexible foundation for bu
 ## Installation
 
 ```
-composer require light/graphql
+composer require mathsgod/light-graphql
 ```
 
 ### Key Components
