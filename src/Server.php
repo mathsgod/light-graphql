@@ -83,7 +83,7 @@ class Server implements RequestHandlerInterface
                 $result = $result->toArray();
             }
 
-            return new JsonResponse($result);
+            return new JsonResponse($result, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
             if ($this->debug) {
                 $errorResponse = [
