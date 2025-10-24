@@ -24,7 +24,7 @@ class Server implements RequestHandlerInterface
     protected $factory;
     protected $debug;
 
-    public function __construct($defaultLiftetime = 15, $debug = false, ?ContainerInterface $container = null)
+    public function __construct($defaultLifetime = 15, $debug = false, ?ContainerInterface $container = null)
     {
         $this->debug = $debug;
 
@@ -35,7 +35,7 @@ class Server implements RequestHandlerInterface
             $this->container->delegate(new \League\Container\ReflectionContainer());
         }
 
-        $this->cache = new Psr16Cache(new FilesystemAdapter("light", $defaultLiftetime));
+        $this->cache = new Psr16Cache(new FilesystemAdapter("light", $defaultLifetime));
 
         $this->factory = new SchemaFactory($this->cache, $this->container);
 
