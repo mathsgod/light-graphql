@@ -19,9 +19,9 @@ use TheCodingMachine\GraphQLite\SchemaFactory;
 class Server implements RequestHandlerInterface
 {
 
-    protected $container;
-    protected $cache;
-    protected $factory;
+    protected ContainerInterface $container;
+    protected \Psr\SimpleCache\CacheInterface $cache;
+    protected SchemaFactory $factory;
     protected $debug;
 
     public function __construct($defaultLifetime = 15, $debug = false, ?ContainerInterface $container = null)
