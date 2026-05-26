@@ -31,8 +31,9 @@ class Server implements RequestHandlerInterface
         if ($container) {
             $this->container = $container;
         } else {
-            $this->container = new \League\Container\Container();
-            $this->container->delegate(new \League\Container\ReflectionContainer());
+            $leagueContainer = new \League\Container\Container();
+            $leagueContainer->delegate(new \League\Container\ReflectionContainer());
+            $this->container = $leagueContainer;
         }
 
         $this->cache = new Psr16Cache(new FilesystemAdapter("light", $defaultLifetime));
