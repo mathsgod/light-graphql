@@ -16,11 +16,11 @@
     },
     "require": {
         "php": "^8.3",
-        "league/container": "^4.2",
+        "league/container": "^5.2",
         "thecodingmachine/graphqlite": "^8.0",
-        "symfony/cache": "^6.4",
+        "symfony/cache": "^7.4",
         "mathsgod/graphqlite-mixed-type": "^2.3",
-        "ecodev/graphql-upload": "^7.0",
+        "ecodev/graphql-upload": "^8.0",
         "laminas/laminas-diactoros": "^3.5"
     }
 }
