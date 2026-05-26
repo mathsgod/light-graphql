@@ -65,9 +65,13 @@ class Server implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $request = $request->withParsedBody(
-            json_decode($request->getBody()->getContents(), true)
-        );
+        $contentType = $request->getHeaderLine('Content-Type');
+        if (str_contains($contentType, 'application/json')) {
+            $request = $request->withParsedBody(
+                json_decode($request->getBody()->getContents(), true)
+            );
+        }
+
         $uploadMiddleware = new UploadMiddleware();
         $request = $uploadMiddleware->processRequest($request);
 
