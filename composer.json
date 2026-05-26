@@ -10,12 +10,12 @@
     ],
     "autoload": {
         "psr-4": {
-            "Controllers\\": "test/",
             "Light\\GraphQL\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
+            "Controllers\\": "test/",
             "Tests\\": "tests/"
         }
     },
