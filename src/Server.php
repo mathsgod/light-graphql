@@ -95,7 +95,7 @@ class Server implements RequestHandlerInterface
             ?? json_decode($request->getBody()->getContents(), true);
 
         if (!is_array($body)) {
-            return new JsonResponse(['error' => true, 'message' => 'Invalid request body.'], 400);
+            return new JsonResponse(['errors' => [['message' => 'Invalid request body.']]], 400);
         }
 
         $query = $body['query'] ?? null;
@@ -103,7 +103,7 @@ class Server implements RequestHandlerInterface
         $operationName = $body['operationName'] ?? null;
 
         if ($query === null) {
-            return new JsonResponse(['error' => true, 'message' => 'Missing query in request.'], 400);
+            return new JsonResponse(['errors' => [['message' => 'Missing query in request.']]], 400);
         }
 
         try {
@@ -122,18 +122,10 @@ class Server implements RequestHandlerInterface
 
     private function buildErrorResponse(Exception $e): ResponseInterface
     {
-        if ($this->debug) {
-            $body = [
-                'error' => true,
-                'message' => $e->getMessage(),
-                'trace' => $e->getTrace(),
-            ];
-        } else {
-            $body = [
-                'error' => true,
-                'message' => 'An internal server error occurred.',
-            ];
-        }
-        return new JsonResponse($body, 500);
+        $error = $this->debug
+            ? ['message' => $e->getMessage(), 'extensions' => ['trace' => $e->getTrace()]]
+            : ['message' => 'An internal server error occurred.'];
+
+        return new JsonResponse(['errors' => [$error]], 500);
     }
 }
