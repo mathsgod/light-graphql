@@ -6,12 +6,17 @@ namespace Light\GraphQL;
 use Exception;
 use GQL\Type\MixedTypeMapperFactory;
 use GraphQL\Error\DebugFlag;
+use GraphQL\Executor\ExecutionResult;
+use GraphQL\GraphQL;
 use GraphQL\Upload\UploadMiddleware;
 use Laminas\Diactoros\Response\JsonResponse;
+use League\Container\Container as LeagueContainer;
+use League\Container\ReflectionContainer;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Component\Cache\Psr16Cache;
 use TheCodingMachine\GraphQLite\SchemaFactory;
@@ -20,7 +25,7 @@ class Server implements RequestHandlerInterface
 {
 
     protected ContainerInterface $container;
-    protected \Psr\SimpleCache\CacheInterface $cache;
+    protected CacheInterface $cache;
     protected SchemaFactory $factory;
     protected bool $debug;
 
@@ -31,8 +36,8 @@ class Server implements RequestHandlerInterface
         if ($container) {
             $this->container = $container;
         } else {
-            $leagueContainer = new \League\Container\Container();
-            $leagueContainer->delegate(new \League\Container\ReflectionContainer());
+            $leagueContainer = new LeagueContainer();
+            $leagueContainer->delegate(new ReflectionContainer());
             $this->container = $leagueContainer;
         }
 
@@ -54,14 +59,14 @@ class Server implements RequestHandlerInterface
         return $this->container;
     }
 
-    public function getCache(): \Psr\SimpleCache\CacheInterface
+    public function getCache(): CacheInterface
     {
         return $this->cache;
     }
 
-    public function executeQuery(string $query, array $variables = [], ?string $operationName = null): \GraphQL\Executor\ExecutionResult
+    public function executeQuery(?string $query, array $variables = [], ?string $operationName = null): ExecutionResult
     {
-        return \GraphQL\GraphQL::executeQuery($this->factory->createSchema(), $query, null, null, $variables, $operationName);
+        return GraphQL::executeQuery($this->factory->createSchema(), $query, null, null, $variables, $operationName);
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
@@ -79,19 +84,7 @@ class Server implements RequestHandlerInterface
         try {
             return $uploadMiddleware->process($request, $inner);
         } catch (Exception $e) {
-            if ($this->debug) {
-                $errorResponse = [
-                    'error' => true,
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTrace(),
-                ];
-            } else {
-                $errorResponse = [
-                    'error' => true,
-                    'message' => 'An internal server error occurred.',
-                ];
-            }
-            return new JsonResponse($errorResponse, 500);
+            return $this->buildErrorResponse($e);
         }
     }
 
@@ -101,9 +94,17 @@ class Server implements RequestHandlerInterface
         $body = $request->getParsedBody()
             ?? json_decode($request->getBody()->getContents(), true);
 
+        if (!is_array($body)) {
+            return new JsonResponse(['error' => true, 'message' => 'Invalid request body.'], 400);
+        }
+
         $query = $body['query'] ?? null;
-        $variables = $body['variables'] ?? [];
+        $variables = is_array($body['variables'] ?? []) ? ($body['variables'] ?? []) : [];
         $operationName = $body['operationName'] ?? null;
+
+        if ($query === null) {
+            return new JsonResponse(['error' => true, 'message' => 'Missing query in request.'], 400);
+        }
 
         try {
             $result = $this->executeQuery($query, $variables, $operationName);
@@ -115,19 +116,24 @@ class Server implements RequestHandlerInterface
 
             return new JsonResponse($data, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
-            if ($this->debug) {
-                $errorResponse = [
-                    'error' => true,
-                    'message' => $e->getMessage(),
-                    'trace' => $e->getTrace(),
-                ];
-            } else {
-                $errorResponse = [
-                    'error' => true,
-                    'message' => 'An internal server error occurred.',
-                ];
-            }
-            return new JsonResponse($errorResponse, 500);
+            return $this->buildErrorResponse($e);
         }
+    }
+
+    private function buildErrorResponse(Exception $e): ResponseInterface
+    {
+        if ($this->debug) {
+            $body = [
+                'error' => true,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTrace(),
+            ];
+        } else {
+            $body = [
+                'error' => true,
+                'message' => 'An internal server error occurred.',
+            ];
+        }
+        return new JsonResponse($body, 500);
     }
 }
