@@ -65,29 +65,53 @@ class Server implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $contentType = $request->getHeaderLine('Content-Type');
-        if (str_contains($contentType, 'application/json')) {
-            $request = $request->withParsedBody(
-                json_decode($request->getBody()->getContents(), true)
-            );
-        }
-
         $uploadMiddleware = new UploadMiddleware();
-        $request = $uploadMiddleware->processRequest($request);
 
-        $body = $request->getParsedBody();
-        $query = $body["query"];
-        $variables = $body["variables"] ?? [];
+        $inner = new class($this) implements RequestHandlerInterface {
+            public function __construct(private Server $server) {}
+            public function handle(ServerRequestInterface $request): ResponseInterface
+            {
+                return $this->server->executeGraphQLRequest($request);
+            }
+        };
+
+        try {
+            return $uploadMiddleware->process($request, $inner);
+        } catch (Exception $e) {
+            if ($this->debug) {
+                $errorResponse = [
+                    'error' => true,
+                    'message' => $e->getMessage(),
+                    'trace' => $e->getTrace(),
+                ];
+            } else {
+                $errorResponse = [
+                    'error' => true,
+                    'message' => 'An internal server error occurred.',
+                ];
+            }
+            return new JsonResponse($errorResponse, 500);
+        }
+    }
+
+    public function executeGraphQLRequest(ServerRequestInterface $request): ResponseInterface
+    {
+        // Use pre-parsed body (e.g. from UploadMiddleware) or decode JSON body
+        $body = $request->getParsedBody()
+            ?? json_decode($request->getBody()->getContents(), true);
+
+        $query = $body['query'] ?? null;
+        $variables = $body['variables'] ?? [];
 
         try {
             $result = $this->executeQuery($query, $variables);
             if ($this->debug) {
-                $result = $result->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
+                $data = $result->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
             } else {
-                $result = $result->toArray();
+                $data = $result->toArray();
             }
 
-            return new JsonResponse($result, 200, [], JSON_UNESCAPED_UNICODE);
+            return new JsonResponse($data, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $e) {
             if ($this->debug) {
                 $errorResponse = [
