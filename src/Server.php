@@ -22,9 +22,9 @@ class Server implements RequestHandlerInterface
     protected ContainerInterface $container;
     protected \Psr\SimpleCache\CacheInterface $cache;
     protected SchemaFactory $factory;
-    protected $debug;
+    protected bool $debug;
 
-    public function __construct($defaultLifetime = 15, $debug = false, ?ContainerInterface $container = null)
+    public function __construct(int $defaultLifetime = 15, bool $debug = false, ?ContainerInterface $container = null)
     {
         $this->debug = $debug;
 
@@ -43,22 +43,22 @@ class Server implements RequestHandlerInterface
         $this->factory->prodMode();
     }
 
-    public function getSchemaFactory()
+    public function getSchemaFactory(): SchemaFactory
     {
         return $this->factory;
     }
 
-    public function getContainer()
+    public function getContainer(): ContainerInterface
     {
         return $this->container;
     }
 
-    public function getCache()
+    public function getCache(): \Psr\SimpleCache\CacheInterface
     {
         return $this->cache;
     }
 
-    public function executeQuery($query, $variables = [], $operationName = null)
+    public function executeQuery(string $query, array $variables = [], ?string $operationName = null): \GraphQL\Executor\ExecutionResult
     {
         return \GraphQL\GraphQL::executeQuery($this->factory->createSchema(), $query, null, null, $variables, $operationName);
     }
@@ -102,9 +102,10 @@ class Server implements RequestHandlerInterface
 
         $query = $body['query'] ?? null;
         $variables = $body['variables'] ?? [];
+        $operationName = $body['operationName'] ?? null;
 
         try {
-            $result = $this->executeQuery($query, $variables);
+            $result = $this->executeQuery($query, $variables, $operationName);
             if ($this->debug) {
                 $data = $result->toArray(DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE);
             } else {
