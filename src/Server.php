@@ -95,7 +95,7 @@ class Server implements RequestHandlerInterface
             ?? json_decode($request->getBody()->getContents(), true);
 
         if (!is_array($body)) {
-            return new JsonResponse(['errors' => [['message' => 'Invalid request body.']]], 400);
+            return new JsonResponse(['errors' => [['message' => 'Invalid request body.']]], 200);
         }
 
         $query = $body['query'] ?? null;
@@ -103,7 +103,7 @@ class Server implements RequestHandlerInterface
         $operationName = $body['operationName'] ?? null;
 
         if ($query === null) {
-            return new JsonResponse(['errors' => [['message' => 'Missing query in request.']]], 400);
+            return new JsonResponse(['errors' => [['message' => 'Missing query in request.']]], 200);
         }
 
         try {
@@ -126,6 +126,6 @@ class Server implements RequestHandlerInterface
             ? ['message' => $e->getMessage(), 'extensions' => ['trace' => $e->getTrace()]]
             : ['message' => 'An internal server error occurred.'];
 
-        return new JsonResponse(['errors' => [$error]], 500);
+        return new JsonResponse(['errors' => [$error]], 200);
     }
 }
